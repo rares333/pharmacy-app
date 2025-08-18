@@ -13,7 +13,6 @@ export interface Product {
   pack_size: string;
   price_eur: number | null;
   image_url: string | null;
-  // …any other fields you need
 }
 
 export async function getRecommendations(symptom: string): Promise<Product[]> {

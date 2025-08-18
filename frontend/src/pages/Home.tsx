@@ -20,24 +20,20 @@ export default function Home() {
   const [cardInput, setCardInput] = useState('');
   const nav = useNavigate();
 
-  // 1) Handle loyalty‐card entry
   const handleCardSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = cardInput.trim();
     if (trimmed) setCardId(trimmed);
   };
 
-  // 2) Skip card flow
   const handleSkip = () => {
     setSkippedCard(true);
   };
 
-  // 3) Navigate when symptom is chosen
   const handleSymptomSubmit = (symptom: string) => {
     nav(`/recommendations?symptom=${encodeURIComponent(symptom)}`);
   };
 
-  // 4) First: prompt for card unless already scanned or skipped
   if (!cardId && !skippedCard) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
@@ -74,7 +70,6 @@ export default function Home() {
     );
   }
 
-  // 5) Then: show the symptom autosuggest input
   return (
     <Container maxWidth="sm" sx={{ mt: 8 }}>
       <Card elevation={3}>

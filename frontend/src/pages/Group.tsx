@@ -286,7 +286,6 @@ export default function Group() {
       <Typography variant="h5" gutterBottom>{category}</Typography>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Filters */}
       {!loading && !error && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
           <ToggleButtonGroup
@@ -323,7 +322,6 @@ export default function Group() {
         </Box>
       )}
 
-      {/* Results */}
       {loading ? (
         <Grid container spacing={2}>
           {Array.from({ length: 8 }).map((_, i) => (

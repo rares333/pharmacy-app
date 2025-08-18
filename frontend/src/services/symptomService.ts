@@ -1,12 +1,9 @@
-// src/services/symptomService.ts
 import axios from 'axios';
 
-// Base URL for our backend API (defined in .env)
 const API_URL      = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 const RECOMMEND_URL = `${API_URL}/recommendations`;
 const SUGGEST_URL   = `${API_URL}/symptom_suggestions`;
 
-// Shape of a product recommendation coming back from the server
 export interface ProductRecommendation {
   id:           number;
   name:         string;
@@ -18,11 +15,10 @@ export interface ProductRecommendation {
   indications:  string;
   dosage_form:       string | null;
   dosage: string,
-  category: string;  // pulled from your “Forma farmaceutica + Concentratie” combo
+  category: string;
 }
 
 /**
- * Fetch product recommendations for a given symptom.
  * @param symptom The user‐entered symptom text
  * @param cardId   (optional) loyalty card to personalize history
  */
@@ -45,7 +41,6 @@ interface HistoryEntry {
   at:      string;
 }
 
-/** store each successful query into localStorage */
 function recordHistory(symptom: string, cardId?: string) {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
@@ -53,12 +48,10 @@ function recordHistory(symptom: string, cardId?: string) {
     arr.unshift({ symptom, cardId, at: new Date().toISOString() });
     localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(0, 100)));
   } catch {
-    // fail silently
   }
 }
 
 /**
- * Fetch a list of symptom‐autocomplete suggestions.
  * @param q Partial symptom text
  */
 export async function fetchSymptomSuggestions(q: string): Promise<string[]> {
