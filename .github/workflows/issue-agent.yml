@@ -5,32 +5,43 @@ on:
     types: [opened]
   issue_comment:
     types: [created]
+  pull_request:
+    types: [opened, ready_for_review, reopened]
 
 permissions:
   contents: write # push the agent/issue-N plan branch
   issues: write # comment and label
+  pull-requests: write # post reviews
+  statuses: write # set the malone/review status
 
 concurrency:
-  group: issue-agent-${{ github.event.issue.number }}
+  group: issue-agent-${{ github.event.issue.number || github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   agent:
     # Cheap pre-filter; the agent applies the full trust check (owner/member/collaborator only).
+    # Pull requests from forks are skipped: they get no secrets.
     if: >-
       github.event.sender.type != 'Bot' &&
       (github.event_name == 'issues' ||
-       (!github.event.issue.pull_request &&
+       (github.event_name == 'pull_request' &&
+        !github.event.pull_request.draft &&
+        github.event.pull_request.head.repo.full_name == github.repository) ||
+       (github.event_name == 'issue_comment' &&
         (contains(github.event.comment.body, '/malone') ||
          contains(github.event.comment.body, '/agent') ||
+         contains(github.event.comment.body, '/review') ||
          contains(github.event.comment.body, '@malone') ||
-         contains(github.event.issue.labels.*.name, 'needs-info'))))
+         (!github.event.issue.pull_request && contains(github.event.issue.labels.*.name, 'needs-info')))))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # full history for git_log and git_blame
+          # Reviews read the PR head; everything else reads the default branch.
+          ref: ${{ github.event.pull_request.head.sha || (github.event.issue.pull_request && format('refs/pull/{0}/head', github.event.issue.number)) || '' }}
+          fetch-depth: 0 # full history for git_log, git_blame and git_diff
       - uses: rares333/issue-agent@v1
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
