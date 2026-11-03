@@ -1,0 +1,36 @@
+name: Issue agent
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write # push the agent/issue-N plan branch
+  issues: write # comment and label
+
+concurrency:
+  group: issue-agent-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  agent:
+    # Cheap pre-filter; the agent applies the full trust check (owner/member/collaborator only).
+    if: >-
+      github.event.sender.type != 'Bot' &&
+      (github.event_name == 'issues' ||
+       (!github.event.issue.pull_request &&
+        (contains(github.event.comment.body, '/malone') ||
+         contains(github.event.comment.body, '/agent') ||
+         contains(github.event.comment.body, '@malone') ||
+         contains(github.event.issue.labels.*.name, 'needs-info'))))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for git_log and git_blame
+      - uses: rares333/issue-agent@v1
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
